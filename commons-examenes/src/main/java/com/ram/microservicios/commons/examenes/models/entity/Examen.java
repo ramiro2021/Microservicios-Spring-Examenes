@@ -1,8 +1,10 @@
-package com.ram.microservicios.commons.app.examenes.models.entity;
+package com.ram.microservicios.commons.examenes.models.entity;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -14,6 +16,8 @@ import javax.persistence.PrePersist;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Table(name = "Examenes")
@@ -28,7 +32,8 @@ public class Examen {
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date createAt;
 	
-	@OneToMany(fetch = FetchType.LAZY)
+	@JsonIgnoreProperties(value = {"examen"}, allowSetters = true)
+	@OneToMany(mappedBy = "examen", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Pregunta> preguntas;
 	
 	@PrePersist
@@ -37,6 +42,12 @@ public class Examen {
 	}
 	
 	
+	
+	public Examen() {
+	this.preguntas = new ArrayList<>();
+	}
+
+
 	public Long getId() {
 		return id;
 	}
@@ -56,5 +67,25 @@ public class Examen {
 		this.createAt = createAt;
 	}
 	
+	public List<Pregunta> getPreguntas() {
+		return preguntas;
+	}
+
+
+	public void setPreguntas(List<Pregunta> preguntas) {
+		this.preguntas.clear();
+		preguntas.forEach(this::addPregunta);
+	}
+
+	
+	public void addPregunta(Pregunta pregunta) {
+		this.preguntas.add(pregunta);
+		pregunta.setExamen(this);
+	}
+	
+	public void removePregunta(Pregunta pregunta) {
+		this.preguntas.remove(pregunta);
+		pregunta.setExamen(null);
+	}
 	
 }
