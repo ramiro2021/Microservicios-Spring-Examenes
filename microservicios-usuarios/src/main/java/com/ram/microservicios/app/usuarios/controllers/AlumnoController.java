@@ -2,10 +2,11 @@ package com.ram.microservicios.app.usuarios.controllers;
 
 import java.util.Optional;
 
+import javax.validation.Valid;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
@@ -22,7 +23,11 @@ public class AlumnoController extends CommonController<Alumno, IAlumnoService> {
 	
 		
 	@PutMapping("/{id}")
-	public ResponseEntity<?> editar(@PathVariable Long id, @RequestBody Alumno alumno){
+	public ResponseEntity<?> editar(@Valid @RequestBody Alumno alumno, BindingResult result , @PathVariable Long id){
+		
+		if (result.hasErrors()) {
+			return this.validar(result);
+		}
 		
 		Optional<Alumno> alumnoOptional = service.findOne(id);
 		if (alumnoOptional.isEmpty()) {

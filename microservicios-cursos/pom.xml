@@ -22,10 +22,17 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>com.ram.microservicios.commons.examenes</groupId>
+			<artifactId>commons-examenes</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+
+		</dependency>
+		<dependency>
 			<groupId>com.ram.microservicios.commons.alumnos</groupId>
 			<artifactId>commons-alumnos</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
+		
 		<dependency>
 			<groupId>com.ram.microservicios.commons</groupId>
 			<artifactId>commons-microservicios</artifactId>

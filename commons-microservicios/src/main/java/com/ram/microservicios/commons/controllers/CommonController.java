@@ -1,10 +1,14 @@
 package com.ram.microservicios.commons.controllers;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
-
+import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,6 +30,11 @@ public class CommonController <E, S extends ICommonService<E>> {
 		return ResponseEntity.ok().body(service.findAll());
 	}
 	
+	@GetMapping("/pagina")
+	public ResponseEntity<?> listar(Pageable page){
+		return ResponseEntity.ok().body(service.findAll(page));
+	}
+	
 	@GetMapping("/{id}")
 	public ResponseEntity<?> ver(@PathVariable long id) {
 		
@@ -39,7 +48,11 @@ public class CommonController <E, S extends ICommonService<E>> {
 	}
 	
 	@PostMapping
-	public ResponseEntity<?> crear(@RequestBody E entity){
+	public ResponseEntity<?> crear(@Valid @RequestBody E entity, BindingResult result){
+		
+		if (result.hasErrors()) {
+			return this.validar(result);
+		}
 		
 		E entityDB = service.save(entity);
 		
@@ -53,4 +66,16 @@ public class CommonController <E, S extends ICommonService<E>> {
 		service.deleteById(id);
 		return ResponseEntity.noContent().build();
 	}
+	
+	protected ResponseEntity<?> validar(BindingResult result){
+		Map<String, Object> errores =new HashMap<>();
+		
+		result.getAllErrors().forEach(err -> {
+			errores.put(err.getObjectName(), err.getDefaultMessage());
+		});
+		
+		return ResponseEntity.badRequest().body(errores);
+		
+	}
+	
 }

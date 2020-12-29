@@ -3,8 +3,11 @@ package com.ram.microservicios.app.cursos.controllers;
 import java.util.List;
 import java.util.Optional;
 
+import javax.validation.Valid;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -15,12 +18,17 @@ import com.ram.microservicios.app.cursos.models.entity.Curso;
 import com.ram.microservicios.app.cursos.services.ICursoService;
 import com.ram.microservicios.commons.alumnos.models.entity.Alumno;
 import com.ram.microservicios.commons.controllers.CommonController;
+import com.ram.microservicios.commons.examenes.models.entity.Examen;
 
 @RestController
 public class CursoController extends CommonController<Curso, ICursoService> {
 	
 	@PutMapping("/{id}")
-	public ResponseEntity<?> editar(@RequestBody Curso curso, @PathVariable Long id){
+	public ResponseEntity<?> editar(@Valid @RequestBody Curso curso, BindingResult result, @PathVariable Long id){
+		
+		if (result.hasErrors()) {
+			return this.validar(result);
+		}
 		Optional<Curso> cursoOptional = this.service.findOne(id);
 		
 		if (!cursoOptional.isPresent()) {
@@ -80,5 +88,48 @@ Optional<Curso> cursoOptional = this.service.findOne(id);
 		Curso curso = service.findCursoByAlumnoId(id);
 		return ResponseEntity.ok(curso);
 	}
+	
+	
+
+	@PutMapping("/{id}/asignar-examenes")
+	public ResponseEntity<?> asignarExamen(@RequestBody List<Examen> examenes, @PathVariable long id){
+		Optional<Curso> cursoOptional = this.service.findOne(id);
+		
+		if (!cursoOptional.isPresent()) {
+			return ResponseEntity.notFound().build();
+		}
+		
+		Curso cursoDB = cursoOptional.get();
+		
+		
+		examenes.forEach(e -> {
+			cursoDB.addExamen(e);
+		});
+		
+		return ResponseEntity.status(HttpStatus.CREATED).body(this.service.save(cursoDB));
+		
+	}
+	
+	
+	@PutMapping("/{id}/eliminar-examen")
+	public ResponseEntity<?> eliminarExamen(@RequestBody Examen examen, @PathVariable long id){
+		Optional<Curso> cursoOptional = this.service.findOne(id);
+		
+		if (!cursoOptional.isPresent()) {
+			return ResponseEntity.notFound().build();
+		}
+		
+		Curso cursoDB = cursoOptional.get();
+		
+		
+		cursoDB.removeExamen(examen);
+	
+		
+		return ResponseEntity.status(HttpStatus.CREATED).body(this.service.save(cursoDB));
+		
+	}
+	
+	
+	
 	
 }
